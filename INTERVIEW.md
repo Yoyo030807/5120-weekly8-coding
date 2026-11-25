@@ -1,14 +1,10 @@
 # INTERVIEW.md — 15 canonical agent questions, my own answers
 
-*First-person answers for CSS 5120 Week 10, grounded in the Council-Mining
-repo and our real evaluation on the 30-item held-out gold set using
-`gpt-6-astra-2026-09-03` (`ep-20261026151823-95mxw`, run on `2026-11-25`).*
-
 ## Mechanics
 
 ### 1. Walk me through the agent loop. What is ReAct, and how is an agent different from a chatbot?
 
-The agent loop is observe → reason → act → observe again, until the task is
+The agent loop is observe - reason - act - observe again, until the task is
 done. ReAct makes that explicit by alternating a reasoning trace with a tool
 call, feeding each tool result back into the next reasoning step. A chatbot
 only maps a conversation to text; an agent can take actions in an environment
@@ -33,7 +29,7 @@ disposes, is the core safety property of any tool-calling system.
 ### 3. What is MCP and what problem does it solve? When would you add a tool vs not?
 
 MCP is a standard protocol that lets a model client talk to external tools
-and data sources — databases, drives, APIs — through one reusable interface
+and data sources, databases, drives, APIs, through one reusable interface
 instead of bespoke integrations per app. You add an MCP tool when the agent
 needs a capability the model genuinely lacks, like reading a live database or
 creating a calendar event, and the permission boundary is worth defining
@@ -47,7 +43,7 @@ correct choice.
 
 I defend at two layers. First, the request carries a strict JSON Schema
 (`src/schema.py`, `strict: True`, `additionalProperties: False`), so the
-endpoint guarantees parseable JSON with my exact five required keys — across
+endpoint guarantees parseable JSON with my exact five required keys, across
 both 35-item real runs (zero-shot and 3-shot, 70 API calls total),
 `gpt-6-astra-2026-09-03` produced 100% schema-valid records on the first
 attempt (`attempts=1`, `unresolved=0`). Second, Pydantic re-validates
@@ -62,7 +58,7 @@ validation error back; if that also fails, the item is logged to
 They help when a sub-job is read-heavy or has a different prompt shape from
 the main loop: isolating it keeps the main context window small and focused,
 and each agent's instructions can be tightly scoped. My summarizer
-subagent (`src/summarizer.py`) is exactly this — inputs over 3,000 characters
+subagent (`src/summarizer.py`) is exactly this, inputs over 3,000 characters
 get a separate read-only compression prompt before extraction. The tradeoff
 is that isolation is also information loss: the subagent cannot see the full
 conversation, errors can compound across handoffs, and debugging multi-hop
