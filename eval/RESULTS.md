@@ -63,7 +63,7 @@ and (5) archiving the exact raw outputs `out/rows_zero.jsonl` and `out/rows_thre
 ### Why each metric matters for this task
 
 * **`speaker_type` per-class recall (especially `citizen` and `uncertain`)** — In civic-input analysis, false negatives on `citizen` erase public testimony from summaries read by council staff, while collapsing `uncertain` (anonymous voicemails, unsigned cards) into `citizen` or `official` fabricates demographic attribution where none exists.
-* **`stance` macro-F1 across all four classes** — Council agendas are not binary roll calls: staff briefings are `neutral` by rule, and conditional amendments ("I support the goal, not this draft") are `mixed`. Macro-F1 weights the minority/nuanced classes (`mixed`, `oppse` n=7 each) equally with `support`/`neutral` (n=8 each).
+* **`stance` macro-F1 across all four classes** — Council agendas are not binary roll calls: staff briefings are `neutral` by rule, and conditional amendments ("I support the goal, not this draft") are `mixed`. Macro-F1 weights the minority/nuanced classes (`mixed`, `oppose` n=7 each) equally with `support`/`neutral` (n=8 each).
 * **`topic` normalized exact-match** — Open-ended strings cannot be scored with a fixed confusion matrix; exact match after lowercasing and whitespace normalization is a deliberately strict lower bound that exposes granularity and phrasing drift between the model and the codebook's short canonical labels.
 * **`evidence` verbatim-substring rate** — Checks hallucination directly: every extracted quote must appear character-for-character inside the source segment.
 

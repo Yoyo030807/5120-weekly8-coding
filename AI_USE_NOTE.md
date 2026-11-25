@@ -2,7 +2,7 @@
 
 **Course:** CSS 5120 · Week 10 homework (Build · Evaluate · Explain an AI Agent)
 **Student:** Yao YU (SID 225030227)
-**Date:** 2026-11-18
+**Date:** 2026-11-25
 
 ## How AI assistance was used
 
@@ -52,8 +52,8 @@ explain every module, test and design trade-off in this repository, and I take
 full responsibility for the code's correctness, the annotations' accuracy,
 and the honesty of the evaluation. Any errors are my own.
 
-Signature: ______________________________
+Signature: Yao YU (225030227)
 
 Name (print): Yao YU
 
-Date: ______________________________
+Date: 2026-11-25
