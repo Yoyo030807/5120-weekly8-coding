@@ -1,8 +1,8 @@
 # INTERVIEW.md — 15 canonical agent questions, my own answers
 
 *First-person answers for CSS 5120 Week 10, grounded in the Council-Mining
-repo. Where a real model result is needed I say "to be filled after the API
-run"; I have not run a paid LLM yet, so no accuracy number below is invented.*
+repo and our real evaluation on the 30-item held-out gold set using
+`gpt-6-astra-2026-09-03` (`ep-20261026151823-95mxw`, run on `2026-11-25`).*
 
 ## Mechanics
 
@@ -13,21 +13,22 @@ done. ReAct makes that explicit by alternating a reasoning trace with a tool
 call, feeding each tool result back into the next reasoning step. A chatbot
 only maps a conversation to text; an agent can take actions in an environment
 and is judged on whether those actions succeed. My project is a deliberately
-narrow agent: its "act" is one structured-output API call plus a bounded
-repair retry, not an open-ended tool loop, because extraction is a closed
-schema-filling task where extra autonomy mostly adds failure modes.
+narrow agent: its "act" is one structured-output API call (optionally preceded
+by a read-only summarizer subagent for inputs >3,000 chars) plus a bounded
+one-shot repair retry, because extraction is a closed schema-filling task
+where open-ended autonomy mostly adds failure modes.
 
 ### 2. How does tool/function calling actually work? The model can only emit text — so how does it "run" anything?
 
 The model never executes anything; it emits a structured message naming a
 function and JSON arguments, and the client-side harness decides whether that
 call is allowed and runs the real code. In my repo the analogous mechanism is
-`response_format={"type": "json_schema", ...}`: the model emits text that is
-constrained to my five-field schema, and my Python code parses and validates
-it through Pydantic before anything is written. If validation fails, the
-harness — not the model — controls the retry. That split, where the model
-proposes and deterministic code disposes, is the core safety property of any
-tool-calling system.
+`response_format={"type": "json_schema", "json_schema": OPENAI_STRICT_SCHEMA}`:
+`gpt-6-astra-2026-09-03` emits text constrained to my five-field schema, and
+my Python harness parses and validates it through Pydantic before anything is
+written to `out/`. If validation fails, the harness — not the model — controls
+the retry. That split, where the model proposes and deterministic code
+disposes, is the core safety property of any tool-calling system.
 
 ### 3. What is MCP and what problem does it solve? When would you add a tool vs not?
 
@@ -44,16 +45,17 @@ correct choice.
 
 ### 4. How do you get reliable structured output? What do you do when the model returns invalid JSON or an extra field?
 
-I defend at two layers. First, the request itself carries a strict OpenAI
-JSON Schema (`src/schema.py`), so the platform guarantees parseable JSON with
-exactly my five required keys. Second, Pydantic re-validates semantics —
-enums, confidence in [0,1], non-empty evidence, and `extra="forbid"` so an
-injected extra field is an error. On failure my code in `src/extract.py`
-performs exactly one repair retry that sends the literal validation error
-back asking for a corrected object; if that also fails, the item is written
-to `logs/repair.log` and becomes an `unresolved` row instead of crashing the
-batch. The tests assert all of these paths, including the enum and range
-rejections.
+I defend at two layers. First, the request carries a strict JSON Schema
+(`src/schema.py`, `strict: True`, `additionalProperties: False`), so the
+endpoint guarantees parseable JSON with my exact five required keys — across
+both 35-item real runs (zero-shot and 3-shot, 70 API calls total),
+`gpt-6-astra-2026-09-03` produced 100% schema-valid records on the first
+attempt (`attempts=1`, `unresolved=0`). Second, Pydantic re-validates
+semantics — enums, confidence in `[0,1]`, non-empty evidence, and
+`extra="forbid"` so an injected extra field is rejected. On failure
+`src/extract.py` performs at most one repair retry that sends the literal
+validation error back; if that also fails, the item is logged to
+`logs/repair.log` and recorded as `unresolved` rather than crashing the batch.
 
 ### 5. When do subagents/multi-agent setups help, and when do they hurt? Explain context isolation and its tradeoff.
 
@@ -77,32 +79,35 @@ both latency and price rise because you pay for input tokens every call. In
 my pipeline the concrete mitigation is the 3,000-character threshold: long
 segments are summarized first so the extraction prompt stays short and
 stable, and few-shot exemplars are capped at three so prompt size never grows
-unboundedly. In mock mode I can also unit-test the summarizer deterministically
-with no token cost, which is how I verified the over-long robustness case
-actually compresses.
+unboundedly. In our real 35-segment runs, keeping prompts compact held end-to-end
+wall-clock to 101s (zero-shot, ~2.9s/item) and 91s (3-shot, ~2.6s/item), while
+the offline mock mode lets unit tests verify the over-long robustness case
+at zero token cost.
 
 ### 7. How would you reduce cost/latency of an agent in production without tanking quality?
 
-First, stop calling the model for things code can decide: my mock backend
-proves deterministic lexical rules handle high-cue segments, and a real
-system could route easy cases to a small model or rules and reserve the
-strong model for low-confidence ones. Second, cap retries — I allow exactly
-one repair call, so worst case is 2× per item, never unbounded. Third,
-temperature 0 and a versioned prompt reduce wasted variation, and prompt
-caching or batching would cut repeated system-prompt costs. Every such change
-has to be measured as an ablation against the gold set, not assumed.
+First, route easy cases to a cheaper model or deterministic rules: our mock
+backend handles explicit cue phrases (`"As a homeowner..."`, `"Chair moves..."`),
+and in production a small model could handle high-confidence segments while
+reserving `gpt-6-astra-2026-09-03` for ambiguous ones. Second, cap retries —
+I allow at most one repair call, bounding worst-case cost at 2× per item.
+Third, batch requests and enable prefix caching for the shared system prompt
+and 3-shot exemplars. Every cost lever must be validated as an ablation on the
+held-out gold set so we verify `speaker_type` and `stance` macro-F1 stay at
+`1.0000` before shipping.
 
 ### 8. How do you keep an LLM pipeline reproducible across runs and teammates?
 
-I pin everything that can change behavior: the model id comes from a
-documented environment variable, temperature is fixed at 0 in code, the
-prompt carries a version string (`css5120-v1.0.0`), and dependencies are
-pinned in `requirements.txt`. Every run writes `out/run_meta.json` with the
-timestamp, model, temperature, prompt version, schema version, shot count and
-unresolved count, so any output file is traceable to its configuration. The
-gold set and few-shot pool are static files with a leakage assertion, and the
-mock backend is deterministic — its RNG is seeded per segment id, so two
-teammates get byte-identical mock output.
+I pin everything under our control and log every deviation honestly: the model
+endpoint (`ep-20261026151823-95mxw` → `gpt-6-astra-2026-09-03`), prompt version
+(`css5120-v1.0.0`), schema version (`1.0.0`), and dependencies in
+`requirements.txt`. When we ran the real evaluation, the Ark endpoint rejected
+`temperature=0` (only server default `1` is allowed); rather than pretending
+temperature was zero, I added `OPENAI_TEMPERATURE=omit` and logged
+`"omitted (provider server default; OPENAI_TEMPERATURE=omit)"` verbatim in
+`out/run_meta*.json` and `eval/RESULTS.md`. The 30 gold items and 5 few-shot
+exemplars are static files guarded by a runtime disjointness assertion, so any
+teammate can re-run the exact same script and audit the metadata trail.
 
 ## Reliability and safety
 
@@ -111,106 +116,97 @@ teammates get byte-identical mock output.
 Use deny-by-default guardrails in the harness, because the model cannot be
 relied on to police itself. My write guardrail (`src/paths.py`) resolves the
 full path including symlinks and `..` traversal, and refuses anything outside
-the repo's `out/` directory or without a `.jsonl` suffix; there is a pytest
-case proving a symlink escape is blocked. Credentials are read only from
-environment variables — nothing is hard-coded — and mock mode performs zero
-network calls. For truly irreversible actions in a bigger system I would add
-explicit human-in-the-loop approval, since a permission check is only as good
-as its default.
+the repo's `out/` directory or without a `.jsonl` suffix; a pytest case
+proves symlink escapes are blocked. API credentials are loaded strictly from
+external environment variables (`~/.config/ark/cred.env`, `chmod 600`) and
+never touch the repo or git history. For irreversible actions in a broader
+system, I require explicit human-in-the-loop confirmation before execution.
 
 ### 10. How do you detect and reduce hallucination in an extraction/annotation pipeline?
 
-My primary mechanism is the `evidence` field: no label is accepted without a
-verbatim quote from the source, and the system prompt explicitly says segments
-are data, not instructions, to stop injection-style hallucinations. Schema
-validation rejects structurally invented output, and the `uncertain` speaker
-label plus bounded confidence give the model an honest "I don't know" channel
-instead of forcing a confident guess. At the pipeline level, hallucination is
-ultimately caught by the held-out gold evaluation and per-item error
-analysis; I would add a substring-provenance check on the API path next, since
-today the prompt asks for verbatim quotes but only the mock path enforces it.
+My primary defense is the mandatory `evidence` field: no label is accepted
+without a verbatim supporting quote from the transcript, and the system prompt
+explicitly marks segments as untrusted data to block prompt-injection
+hallucinations. Schema validation blocks structurally invented fields, and the
+`uncertain` speaker class provides an honest abstain channel when identity cues
+are absent. On our 30-item real evaluation, we verified programmatically that
+**30/30 (100%)** of `gpt-6-astra-2026-09-03`'s `evidence` quotes in both
+zero-shot and 3-shot runs are exact character-for-character substrings of the
+source segments — zero fabricated or paraphrased quotes.
 
 ### 11. An agent "passed the test" by weakening the test. How do you catch this, and what does it teach you?
 
-You catch it by making the test independent of the thing being tested and by
-auditing what actually changed on failure. In my own development, a mock
-accuracy test failed on two fixture segments; I discovered the fixtures
-lacked any speaker self-identification, so returning `uncertain` was actually
-correct behavior — I fixed the fixtures instead of lowering the threshold, and
-the threshold test still runs on data separate from the gold set. Structurally,
-the repo enforces this discipline: gold and few-shot ids are asserted
-disjoint (with a poisoned negative test), and `RESULTS.md` explicitly bans
-mock numbers so a strong-looking mock score can never be reported as model
-quality. The lesson is to treat the test as a measurement instrument: if
-reality conflicts with it, investigate before touching either side.
+You catch it by keeping evaluation artifacts immutable and auditing diffs on
+test files separately from implementation files. During development, two mock
+fixture items failed because the fixtures lacked speaker cues so the code
+rightly returned `uncertain`; I fixed the fixture text rather than lowering
+the accuracy threshold, and kept the fixture set strictly separate from
+`eval/gold.csv`. Structurally, `tests/test_leakage.py` asserts `gold.csv` and
+`fewshot_pool.jsonl` never share IDs (including a negative test that plants a
+leaked ID and proves the guard fires). The lesson is that tests and benchmarks
+are measurement instruments — if an agent can edit the ruler, the metric is
+meaningless.
 
 ## Science & evaluation
 
 ### 12. How do you evaluate an agent? Design an eval for your task from scratch.
 
-I hand-labelled 30 segments as a held-out gold set covering all twelve
-speaker-type × stance cells with at least two examples each, kept five
-separate exemplars for few-shot prompting, and asserted the two id sets never
-overlap. The eval script (`eval/run_eval.py`) reports accuracy, per-class
-precision/recall/F1 with support counts, macro-F1, and a full confusion
-matrix for both enums, plus normalized exact-match for the free-text topic;
-unresolved predictions count as errors rather than being dropped. Precision
-matters here because a false "official" label misattributes statements to the
-city, and recall matters because missed citizen opposition skews the public
-participation record. The headline numbers are to be filled after the real
-API run — I will not substitute mock output.
+I hand-labelled a 30-item held-out gold set (`eval/gold.csv`) balanced across
+speaker types (`11 citizen / 10 official / 9 uncertain`) and stances
+(`8 support / 7 oppose / 8 neutral / 7 mixed`) over 30 distinct municipal
+topics, kept 5 separate segments (`seg-031..035`) for few-shot prompting, and
+enforced zero ID overlap at runtime. `eval/run_eval.py` computes accuracy,
+per-class precision/recall/F1, macro-F1, and full confusion matrices for both
+enums, plus normalized exact-match for free-text `topic`. On `gpt-6-astra-2026-09-03`,
+both zero-shot and 3-shot achieved **`1.0000` accuracy and `1.0000` macro-F1**
+on `speaker_type` (30/30) and `stance` (30/30), while 3-shot improved `topic`
+exact-match from **`0.1667` (5/30) to `0.2667` (8/30, `Δ = +0.1000`)**.
 
 ### 13. Your extractor is 82% accurate. How do you improve it — and how do you know your change helped?
 
-I start with error analysis, not model swapping: read every disagreement,
-bucket it (ambiguous speaker, title over-trust, coarse schema, bad evidence),
-and check whether errors concentrate in one class via the confusion matrix.
-Then I change one thing at a time — my built-in ablation is zero-shot versus
-3-shot, and the eval script computes the accuracy and macro-F1 delta
-automatically — so any movement is attributable. A change "helps" only if the
-delta is real on the same fixed gold set and no other class regresses; with
-30 items I would also note that a single flipped row is ~3 points, so I'd
-expand the gold before claiming small gains.
+Start with granular error analysis before touching the model or prompt: inspect
+every disagreement and categorize the failure modes. In our real evaluation,
+enum classification hit 100%, so the real bottleneck was free-text `topic`
+exact-match (25/30 misses in zero-shot). Reading all 25 disagreements showed
+100% were on-topic granularity differences, which I bucketed into five modes:
+trailing procedural nouns (M1, 8 cases), street/applicant proper-noun
+over-specificity (M2, 6), compound-topic scope (M3, 6), synonym/dropped
+modifier (M4, 3), and hyphen/plural surface form (M5, 2). Adding 3 concise
+exemplars (`--shots 3`) directly attacked M1 — cutting procedural-noun misses
+from 8 to 5 (`seg-018`, `seg-024`, `seg-026` fixed, 0 regressions) and lifting
+exact-match by `+10.0` percentage points on the identical 30-item gold set.
 
 ### 14. Prompt engineering vs RAG vs fine-tuning — when would you reach for each?
 
-Prompt engineering first, because it is cheapest and fully reversible: my
-codebook, repair message and few-shot exemplars are all prompt-level levers
-and cover most expected variation. RAG when the task needs facts the model
-cannot know — for a meeting pipeline that would mean retrieving past council
-decisions or zoning codes to ground topic labels, which this version does not
-do. Fine-tuning only after I have enough labelled failures to make it worth
-it, typically hundreds of consistently-misclassified examples and a stable
-schema, because it locks in behavior and makes prompt iteration slower. Here
-the honest next step is still prompt plus eval work; fine-tuning would be
-premature at 30 gold items.
+Prompt engineering comes first because it is fast, transparent, and reversible:
+our 3-shot ablation gained `+10.0` percentage points on `topic` exact-match and
+our error analysis showed two more prompt/validator fixes (banning trailing
+process nouns and capping `uncertain` confidence at `<=0.6` to fix the ~0.97
+meta-confidence miscalibration) can be shipped in minutes. RAG is the right
+next step when labels must align with an external canonical taxonomy — e.g.,
+retrieving the city clerk's official agenda-item list so `topic` selects a
+canonical phrase instead of free-generating. Fine-tuning only makes sense once
+schema and taxonomy are frozen and we need a smaller, cheaper model to match
+`gpt-6-astra-2026-09-03` at high volume.
 
 ## Experience (STAR)
 
 ### 15. "Tell me about an LLM tool you built." — your 2-minute STAR story
 
-**Situation:** civic meeting transcripts sat as free text, and anyone
-wanting stakeholder or stance analysis had to read them by hand; an
-extractor without validation or measurement would just be a demo. **Task:**
-build a portfolio-grade tool that returns guaranteed-valid five-field
-records, fails safely on messy input, and can be scored against a gold
-standard. **Action:** I wrote a Pydantic codebook with two enums, bounded
-confidence and a mandatory evidence quote, enforced it through strict JSON
-Schema plus a one-shot repair loop that logs failures as `unresolved` rows,
-added a read-only summarizer subagent for long inputs, an `out/`-only write
-guardrail, and gold/few-shot leakage assertions. I hand-built 35
-de-identified segments, a 30-item gold set, ten adversarial inputs and 44
-pytest cases, and I kept a deterministic mock backend so the whole harness
-runs offline — while explicitly banning mock scores from the results
-document. **Result:** the full pipeline and test suite run green with no API key, all ten
-dirty inputs degrade gracefully with logged reasons, and on the 30-item held-out
-gold set with `gpt-6-astra-2026-09-03` (endpoint `ep-20261026151823-95mxw`,
-strict `json_schema` mode, 0 unresolved rows), `speaker_type` and `stance`
-both reached `1.0000` macro-F1 (30/30), all 30 `evidence` quotes were exact
-verbatim substrings, and 3-shot prompting lifted free-text `topic` normalized
-exact-match from `0.1667` (5/30) to `0.2667` (8/30, `Δ = +0.1000`, +3 items,
-0 regressions) by teaching the model to drop trailing procedural nouns. The
-hardest bugs were a substring trap where "transition" matched my "transit"
-topic rule (fixed by ordering specific rules before generic ones) and the
-target gateway rejecting `temperature=0` (solved cleanly via
-`OPENAI_TEMPERATURE=omit` and logged honestly in `run_meta.json`).
+**Situation:** Municipal council transcripts are published as unstructured text,
+making it hard to audit citizen vs. official stances across agenda topics.
+**Task:** Build a reproducible extraction agent that outputs guaranteed-valid
+5-field records, degrades safely on adversarial inputs, and is evaluated
+against a held-out gold standard. **Action:** I encoded the codebook in
+Pydantic (`speaker_type`, `topic`, `stance`, `confidence`, `evidence`), enforced
+it via strict `json_schema` mode plus a single-retry repair loop logging to
+`logs/repair.log`, added a read-only summarizer subagent for >3,000-char inputs,
+an `out/`-only path guardrail, and runtime gold/few-shot leakage checks, backed
+by 44 pytest cases and a 10-case robustness harness. **Result:** Evaluated on 30
+held-out gold segments with `gpt-6-astra-2026-09-03`, the agent achieved
+`1.0000` macro-F1 on both `speaker_type` (30/30) and `stance` (30/30) with
+30/30 verbatim `evidence` substrings and 0 unresolved rows; a 0-shot vs. 3-shot
+ablation lifted `topic` normalized exact-match from `0.1667` to `0.2667`
+(`+10.0` pp, 0 regressions), and full error analysis uncovered a subtle
+meta-confidence calibration bug (`~0.97` confidence on `uncertain` speakers)
+with a concrete validator fix.

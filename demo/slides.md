@@ -28,18 +28,15 @@ segments.jsonl → leakage assertion → write guardrail (out/ only)
    → rows.jsonl + run_meta.json ; second failure → repair.log + unresolved row
 ```
 
-Live command (offline, no API key):
+Live commands (real Ark `gpt-6-astra-2026-09-03` run + offline `--mock` regression gate):
 
 ```bash
-$ python src/run.py data/ -o out/rows.jsonl --mock
+$ OPENAI_TEMPERATURE=omit python src/run.py data/ -o out/rows_three.jsonl --shots 3
 [init] leakage check OK: 30 gold / 5 few-shot / 35 segments, disjoint ids
-[done] wrote 35 rows -> out/rows.jsonl (unresolved=0, summarized=0, ...)
+[done] wrote 35 rows -> out/rows_three.jsonl (source=openai-compatible, unresolved=0, attempts=1)
+$ python eval/run_eval.py --pred out/rows_three.jsonl --baseline out/rows_zero.jsonl
+speaker_type acc=1.0000 macro_F1=1.0000 | stance acc=1.0000 macro_F1=1.0000 | topic_EM=0.2667 (Δ=+0.1000)
 ```
-
-> **[Screenshot placeholder — insert real terminal capture here]**
-> The log above is the **actual mock-mode output**. Labels are produced by
-> deterministic lexical rules (`source="mock-rules"`), **not** an LLM; mock
-> numbers are plumbing evidence and are banned from `eval/RESULTS.md`.
 
 ## 3 · Real-API evaluation (`gpt-6-astra-2026-09-03`, n = 30 gold)
 
