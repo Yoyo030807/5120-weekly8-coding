@@ -1,0 +1,6 @@
+# Pinned to the versions used during development (Python 3.10.12, Linux).
+# Mock mode, the eval script and the test suite need only pydantic + pytest;
+# openai is imported lazily and is required only for real API runs.
+pydantic==2.13.4
+openai==2.45.0
+pytest==9.1.1
