@@ -1,0 +1,40 @@
+/* Print stylesheet: one markdown section per PDF page (5 pages total). */
+body {
+  font-family: "Liberation Sans", "DejaVu Sans", sans-serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  margin: 1.6cm 1.8cm;
+  color: #1a1a1a;
+}
+h1 { font-size: 20pt; margin: 0 0 4pt 0; color: #0b3d66; }
+h3.subtitle, h1 + h3 { font-size: 12pt; font-weight: normal; color: #555; margin-top: 0; }
+h2 {
+  font-size: 15pt;
+  color: #0b3d66;
+  border-bottom: 1.5pt solid #0b3d66;
+  padding-bottom: 3pt;
+  page-break-before: always;
+}
+h2:first-of-type { page-break-before: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 8pt 0; font-size: 10pt; }
+th, td { border: 0.6pt solid #888; padding: 3pt 6pt; text-align: left; }
+th { background: #e8f0f7; }
+code { font-family: "DejaVu Sans Mono", monospace; font-size: 9pt; }
+pre {
+  background: #f4f4f4;
+  border: 0.6pt solid #ccc;
+  border-radius: 3pt;
+  padding: 7pt;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+}
+blockquote {
+  border-left: 3pt solid #b5651d;
+  margin: 8pt 0;
+  padding: 4pt 10pt;
+  background: #fdf6ec;
+  page-break-inside: avoid;
+}
+ul { margin: 6pt 0; padding-left: 18pt; }
+li { margin: 3pt 0; }
+@page { margin: 1.2cm; }
