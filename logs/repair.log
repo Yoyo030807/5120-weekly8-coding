@@ -1,0 +1,12 @@
+2026-11-18 04:45:10,356 | ERROR | segment=dirty-01 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 04:45:10,356 | ERROR | segment=dirty-02 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 04:45:10,356 | ERROR | segment=dirty-03 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 04:47:57,860 | ERROR | segment=dirty-01 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 04:47:57,860 | ERROR | segment=dirty-02 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 04:47:57,860 | ERROR | segment=dirty-03 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 05:00:04,692 | ERROR | segment=dirty-01 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 05:00:04,692 | ERROR | segment=dirty-02 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 05:00:04,692 | ERROR | segment=dirty-03 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 05:01:34,904 | ERROR | segment=dirty-01 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 05:01:34,904 | ERROR | segment=dirty-02 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
+2026-11-18 05:01:34,904 | ERROR | segment=dirty-03 UNRESOLVED in mock mode: empty or non-alphabetic input: nothing to extract
