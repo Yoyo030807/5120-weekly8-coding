@@ -1,0 +1,14 @@
+{
+  "run_at_utc": "2026-11-25T08:17:13+00:00",
+  "mock": false,
+  "model": "ep-20261026151823-95mxw",
+  "temperature": "omitted (provider server default; OPENAI_TEMPERATURE=omit)",
+  "prompt_version": "css5120-v1.0.0",
+  "schema_version": "1.0.0",
+  "shot": 3,
+  "input_file": "data/segments.jsonl",
+  "output_file": "/tmp/css5120_hw_agent_portfolio_20261118/Yao-YU-225030227/out/rows_three.jsonl",
+  "segments_processed": 35,
+  "segments_summarized": 0,
+  "unresolved": 0
+}

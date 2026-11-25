@@ -1,0 +1,119 @@
+{
+  "n_cases": 10,
+  "n_unresolved": 3,
+  "n_schema_valid": 7,
+  "failures": [],
+  "cases": [
+    {
+      "id": "dirty-01",
+      "kind": "empty",
+      "expect": "unresolved",
+      "resolved": false,
+      "source": "unresolved",
+      "summarized": false,
+      "error": "empty or non-alphabetic input: nothing to extract"
+    },
+    {
+      "id": "dirty-02",
+      "kind": "whitespace_only",
+      "expect": "unresolved",
+      "resolved": false,
+      "source": "unresolved",
+      "summarized": false,
+      "error": "empty or non-alphabetic input: nothing to extract"
+    },
+    {
+      "id": "dirty-03",
+      "kind": "null_text",
+      "expect": "unresolved",
+      "resolved": false,
+      "source": "unresolved",
+      "summarized": false,
+      "error": "empty or non-alphabetic input: nothing to extract"
+    },
+    {
+      "id": "dirty-04",
+      "kind": "truncated_mid_sentence",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": false,
+      "speaker_type": "citizen",
+      "stance": "oppose",
+      "topic": "warehouse development",
+      "confidence": 0.815
+    },
+    {
+      "id": "dirty-05",
+      "kind": "wrong_language",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": false,
+      "speaker_type": "uncertain",
+      "stance": "neutral",
+      "topic": "unclear topic",
+      "confidence": 0.4
+    },
+    {
+      "id": "dirty-06",
+      "kind": "prompt_injection",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": false,
+      "speaker_type": "citizen",
+      "stance": "oppose",
+      "topic": "unclear topic",
+      "confidence": 0.679
+    },
+    {
+      "id": "dirty-07",
+      "kind": "embedded_json_impersonation",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": false,
+      "speaker_type": "citizen",
+      "stance": "support",
+      "topic": "community garden",
+      "confidence": 0.789
+    },
+    {
+      "id": "dirty-08",
+      "kind": "overlong_repetitive",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": true,
+      "speaker_type": "citizen",
+      "stance": "support",
+      "topic": "missing-middle zoning",
+      "confidence": 0.837
+    },
+    {
+      "id": "dirty-09",
+      "kind": "all_caps_no_punctuation",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": false,
+      "speaker_type": "official",
+      "stance": "support",
+      "topic": "reservoir expansion",
+      "confidence": 0.87
+    },
+    {
+      "id": "dirty-10",
+      "kind": "ocr_garble_emoji_control",
+      "expect": "record",
+      "resolved": true,
+      "source": "mock-rules",
+      "summarized": false,
+      "speaker_type": "uncertain",
+      "stance": "oppose",
+      "topic": "industrial rezoning",
+      "confidence": 0.709
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "name": "3-shot",
+  "n_gold": 30,
+  "missing_predictions": 0,
+  "speaker_type": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_class": {
+      "citizen": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 11,
+        "tp": 11,
+        "fp": 0,
+        "fn": 0
+      },
+      "official": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 10,
+        "tp": 10,
+        "fp": 0,
+        "fn": 0
+      },
+      "uncertain": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 9,
+        "tp": 9,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "confusion_matrix": {
+      "citizen": {
+        "citizen": 11,
+        "official": 0,
+        "uncertain": 0
+      },
+      "official": {
+        "citizen": 0,
+        "official": 10,
+        "uncertain": 0
+      },
+      "uncertain": {
+        "citizen": 0,
+        "official": 0,
+        "uncertain": 9
+      }
+    },
+    "errors": []
+  },
+  "stance": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0,
+    "per_class": {
+      "mixed": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7,
+        "tp": 7,
+        "fp": 0,
+        "fn": 0
+      },
+      "neutral": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 8,
+        "tp": 8,
+        "fp": 0,
+        "fn": 0
+      },
+      "oppose": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 7,
+        "tp": 7,
+        "fp": 0,
+        "fn": 0
+      },
+      "support": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 8,
+        "tp": 8,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "confusion_matrix": {
+      "mixed": {
+        "mixed": 7,
+        "neutral": 0,
+        "oppose": 0,
+        "support": 0
+      },
+      "neutral": {
+        "mixed": 0,
+        "neutral": 8,
+        "oppose": 0,
+        "support": 0
+      },
+      "oppose": {
+        "mixed": 0,
+        "neutral": 0,
+        "oppose": 7,
+        "support": 0
+      },
+      "support": {
+        "mixed": 0,
+        "neutral": 0,
+        "oppose": 0,
+        "support": 8
+      }
+    },
+    "errors": []
+  },
+  "topic": {
+    "normalized_exact_match": 0.2667,
+    "errors": [
+      {
+        "id": "seg-001",
+        "gold": "missing-middle zoning",
+        "pred": "missing-middle zoning reform"
+      },
+      {
+        "id": "seg-002",
+        "gold": "community garden",
+        "pred": "Maple Street community garden"
+      },
+      {
+        "id": "seg-003",
+        "gold": "warehouse development",
+        "pred": "Linden Logistics warehouse variance"
+      },
+      {
+        "id": "seg-004",
+        "gold": "short-term rentals",
+        "pred": "citywide whole-home short-term rental legalization"
+      },
+      {
+        "id": "seg-005",
+        "gold": "water rates",
+        "pred": "water rate adjustment"
+      },
+      {
+        "id": "seg-006",
+        "gold": "municipal broadband",
+        "pred": "municipal broadband proposal"
+      },
+      {
+        "id": "seg-007",
+        "gold": "protected bike lane",
+        "pred": "protected bike lane alignment"
+      },
+      {
+        "id": "seg-008",
+        "gold": "homeless navigation center",
+        "pred": "proposed navigation center"
+      },
+      {
+        "id": "seg-010",
+        "gold": "EV charging buildout",
+        "pred": "public electric vehicle charging buildout"
+      },
+      {
+        "id": "seg-011",
+        "gold": "transit subsidy cuts",
+        "pred": "transit operating subsidy cut"
+      },
+      {
+        "id": "seg-012",
+        "gold": "surveillance camera expansion",
+        "pred": "camera expansion ordinance"
+      },
+      {
+        "id": "seg-013",
+        "gold": "Elm Street traffic study",
+        "pred": "Elm Street corridor traffic study"
+      },
+      {
+        "id": "seg-014",
+        "gold": "quarterly city revenues",
+        "pred": "first-quarter revenue report"
+      },
+      {
+        "id": "seg-015",
+        "gold": "industrial rezoning",
+        "pred": "industrial-to-residential rezoning"
+      },
+      {
+        "id": "seg-016",
+        "gold": "dog park",
+        "pred": "Riverside dog park proposal"
+      },
+      {
+        "id": "seg-019",
+        "gold": "roundabout",
+        "pred": "roundabout at Fifth and Grove"
+      },
+      {
+        "id": "seg-020",
+        "gold": "cannabis dispensary permit",
+        "pred": "cannabis dispensary special-use permit"
+      },
+      {
+        "id": "seg-022",
+        "gold": "library budget",
+        "pred": "library budget and hours"
+      },
+      {
+        "id": "seg-023",
+        "gold": "food truck ordinance",
+        "pred": "food-truck ordinance"
+      },
+      {
+        "id": "seg-025",
+        "gold": "rezoning and school capacity",
+        "pred": "rezoning"
+      },
+      {
+        "id": "seg-027",
+        "gold": "rental inspections",
+        "pred": "rental inspection program"
+      },
+      {
+        "id": "seg-028",
+        "gold": "street flooding and drainage",
+        "pred": "drainage project"
+      }
+    ]
+  },
+  "unresolved_rows": 0
+}
