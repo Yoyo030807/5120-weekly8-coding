@@ -1,0 +1,31 @@
+id,speaker_type,topic,stance
+seg-001,citizen,missing-middle zoning,support
+seg-002,citizen,community garden,support
+seg-003,citizen,warehouse development,oppose
+seg-004,citizen,short-term rentals,oppose
+seg-005,citizen,water rates,neutral
+seg-006,citizen,municipal broadband,neutral
+seg-007,citizen,protected bike lane,mixed
+seg-008,citizen,homeless navigation center,mixed
+seg-009,official,affordable housing bond,support
+seg-010,official,EV charging buildout,support
+seg-011,official,transit subsidy cuts,oppose
+seg-012,official,surveillance camera expansion,oppose
+seg-013,official,Elm Street traffic study,neutral
+seg-014,official,quarterly city revenues,neutral
+seg-015,official,industrial rezoning,mixed
+seg-016,official,dog park,mixed
+seg-017,uncertain,historic preservation ordinance,support
+seg-018,uncertain,public mural program,support
+seg-019,uncertain,roundabout,oppose
+seg-020,uncertain,cannabis dispensary permit,oppose
+seg-021,uncertain,coyote management,neutral
+seg-022,uncertain,library budget,neutral
+seg-023,uncertain,food truck ordinance,mixed
+seg-024,uncertain,stormwater fee,mixed
+seg-025,citizen,rezoning and school capacity,oppose
+seg-026,official,ambulance service contract,support
+seg-027,citizen,rental inspections,neutral
+seg-028,uncertain,street flooding and drainage,neutral
+seg-029,official,reservoir expansion,mixed
+seg-030,citizen,sidewalk repair levy,support
